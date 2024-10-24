@@ -1,5 +1,6 @@
 package mac_fp;
-
+// Include registers and wires
+//replace + with adder module.
 
 import Vector :: *;
 import VectorUnpack :: *;
