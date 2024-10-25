@@ -1,4 +1,5 @@
 package mac;
+
 //interface declaration for MAC top module
 interface MAC_ifc;
 	method Action get_A(Bit#(16) value);
