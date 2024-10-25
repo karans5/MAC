@@ -1,7 +1,6 @@
 package adder;
 import DReg :: *;
 
-
 typedef struct{
 		Bit#(1) overflow;
 		Bit#(32) sum;
