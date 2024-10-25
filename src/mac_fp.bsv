@@ -2,10 +2,6 @@ package mac_fp;
 // Include registers and wires
 //replace + with adder module.
 
-import Vector :: *;
-import VectorUnpack :: *;
-import VectorPack :: *;
-import FloatingPoint :: *;
 
 module mkMultiplyAccumulate (Empty);
 
@@ -108,27 +104,6 @@ module mkMultiplyAccumulate (Empty);
       return result;
    endfunction
 
-   // Test cases: A = 1.5 (bfloat16), B = 2.5 (bfloat16), C = 1.0 (bfloat16)
-   Bit#(16) A_bfloat16 = 16'h3FC0;  // 1.5 in bfloat16
-   Bit#(16) B_bfloat16 = 16'h4020;  // 2.5 in bfloat16
-   Bit#(16) C_bfloat16 = 16'h3F80;  // 1.0 in bfloat16
-
-   // Convert bfloat16 inputs to FP32
-   Bit#(32) A_fp32 = bfloat16_to_fp32(A_bfloat16);
-   Bit#(32) B_fp32 = bfloat16_to_fp32(B_bfloat16);
-   Bit#(32) C_fp32 = bfloat16_to_fp32(C_bfloat16);
-
-   // Multiply A and B in FP32
-   Bit#(32) product_fp32 <- float_multiply(A_fp32, B_fp32);
-
-   // Add product and C in FP32
-   Bit#(32) result_fp32 <- float_add(product_fp32, C_fp32);
-
-   // Output the result (Y = A * B + C in FP32)
-   rule outputResult;
-      $display("Y = A * B + C in FP32 = %h", result_fp32);
-      finish();
-   endrule
 
 endmodule
 
