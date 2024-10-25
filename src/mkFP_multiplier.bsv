@@ -74,6 +74,7 @@ Reg#(Bool) rg_Product_valid    <- mkDReg(False);
      
       // Add exponents and adjust for IEEE 754 bias
       //8- bit addition
+       // exp_result = exp_a + exp_b - 127;
       Bit#(8) exp_result = exp_a + exp_b +  8'b10000001; //8'b01111111;
       
       
@@ -99,9 +100,9 @@ Reg#(Bool) rg_Product_valid    <- mkDReg(False);
 	
    //always block to compute the product
    rule rl_compute_product (rg_inp_valid);
-   
-   	Bit#(32) fp_A = bf16_to_fp32(rg_A);
-   	Bit#(32) fp_B = bf16_to_fp32(rg_B);
+     
+   	//Bit#(32) fp_A = bf16_to_fp32(rg_A);
+   	//Bit#(32) fp_B = bf16_to_fp32(rg_B);
    	$display("A = %b",fp_A);
    	$display("B = %b",fp_B);
    	
