@@ -1,74 +1,76 @@
-package adder;
-import DReg :: *;
+package adder_int;
 
-typedef struct{
-		Bit#(1) overflow;
-		Bit#(32) sum;
-		} Adderresult deriving(Bits,Eq);
-//ripple carry adder interface
+import DReg :: *;  // Importing `DReg` module to use delayed registers (DRegs)
+
+// Struct to hold the result of the addition, including the sum and overflow flag
+typedef struct {
+    Bit#(1) overflow;  // Overflow flag (1 if overflow occurs)
+    Bit#(32) sum;      // 32-bit sum of the two inputs
+} Adderresult deriving(Bits, Eq);
+
+// Ripple Carry Adder interface definition
 interface RCA_ifc;
-	method Action start(Bit#(32) a, Bit#(32) b);
-	method Adderresult get_result();
+    method Action start(Bit#(32) a, Bit#(32) b);  // Method to load inputs
+    method Adderresult get_add();  // Method to get the result (sum + overflow)
 endinterface: RCA_ifc
 
-//top-level module definition
+// Top-level module definition for the ripple carry adder
 (*synthesize*)
-
 module mkRipplecarryadder (RCA_ifc);
 
-//declare the registers used in the design
+    // --- Register Declarations --- //
 
-Reg#(Bit#(32)) rg_inp1     <- mkReg(0);
-Reg#(Bit#(32)) rg_inp2     <- mkReg(0);
-Reg#(Bool) rg_inp_valid    <- mkDReg(False);
+    Reg#(Bit#(32)) rg_inp1 <- mkReg(0);  // Register to store input 'a'
+    Reg#(Bit#(32)) rg_inp2 <- mkReg(0);  // Register to store input 'b'
+    Reg#(Bool) rg_inp_valid <- mkDReg(False);  // Flag to indicate valid input
+    Reg#(Adderresult) rg_out <- mkReg(Adderresult{overflow: 0, sum: 0});  // Register for the result
+    Reg#(Bool) rg_out_valid <- mkDReg(False);  // Flag to indicate valid output
 
-Reg#(Adderresult) rg_out   <- mkReg(Adderresult{overflow: 0,
-				     sum: 0});
-				     
-Reg#(Bool) rg_out_valid     <-mkDReg(False);
+    // Function to perform the ripple carry addition
+    function Adderresult ripple_carry_addition(
+        Bit#(32) a, Bit#(32) b, Bit#(1) cin);  // 'cin' is the carry-in bit
 
-function Adderresult ripple_carry_addition(Bit#(32) a,
-                                           Bit#(32) b,
-                                           Bit#(1) cin);
-    
-    Bit#(32) sum;
-    Bit#(33) carry;
+        Bit#(32) sum;         // 32-bit sum for the addition
+        Bit#(33) carry;       // 33-bit carry to handle overflow
 
-    carry[0] = cin;			
-    
-    for (Integer i = 0; i < 32; i = i + 1) begin
-        sum[i] = a[i] ^ b[i] ^ carry[i];
-        carry[i + 1] = (a[i] & b[i]) | ((a[i] ^ b[i]) & carry[i]);
-    end			
+        carry[0] = cin;  // Initialize carry-in
 
-    Adderresult out;
-    out.sum = sum;
-    out.overflow = carry[33];
+        // Loop to perform bit-by-bit addition with carry propagation
+        for (Integer i = 0; i < 32; i = i + 1) begin
+            sum[i] = a[i] ^ b[i] ^ carry[i];  // Compute the sum bit
+            carry[i + 1] = (a[i] & b[i]) | ((a[i] ^ b[i]) & carry[i]);  // Compute the carry-out
+        end
 
-    return out;			
-endfunction: ripple_carry_addition
+        // Create the result struct and assign sum and overflow
+        Adderresult out;
+        out.sum = sum;
+        out.overflow = carry[32];  // Set overflow flag from the final carry-out
 
-//rule definitions
+        return out;  // Return the computed result
+    endfunction: ripple_carry_addition
 
-rule rl_rca;
-	rg_out <= ripple_carry_addition(rg_inp1, rg_inp2, 1'b0);
-	rg_out_valid <= True;
-	
-endrule: rl_rca
+    // --- Rule Definitions --- //
 
+    rule rl_rca;
+        // Compute the addition using the ripple_carry_addition function
+        rg_out <= ripple_carry_addition(rg_inp1, rg_inp2, 1'b0);  
+        rg_out_valid <= True;  // Set output valid flag to true
+    endrule: rl_rca
 
-//method definitions
+    // --- Method Definitions --- //
 
-method Action start( Bit#(32) a, Bit#(32) b);
-	rg_inp1 <= a;
-	rg_inp2 <= b;
-	
-endmethod: start
+    // Method to set the input values for addition
+    method Action start(Bit#(32) a, Bit#(32) b);
+        rg_inp1 <= a;  // Store input 'a' in register
+        rg_inp2 <= b;  // Store input 'b' in register
+    endmethod: start
 
-method Adderresult get_result();
-	return rg_out;
-endmethod: get_result
+    // Method to retrieve the addition result
+    method Adderresult get_add();
+        return rg_out;  // Return the result from the output register
+    endmethod: get_add
+
 endmodule: mkRipplecarryadder
 
-endpackage
+endpackage: adder_int
 
