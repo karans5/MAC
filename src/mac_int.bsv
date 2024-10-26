@@ -17,7 +17,7 @@ interface MAC_int_ifc;
 //	method Action get_B(Bit#(8) value);
 //	method Action get_C(Bit#(32) value);
 	method Action get_Inputs(MACinputs input);
-        method Bit#(32) get_MAC();	
+    method Bit#(32) get_MAC();	
 endinterface: MAC_int_ifc
 
 (*synthesize*)
@@ -41,9 +41,11 @@ module mkMAC_int(MAC_int_ifc);
 	//the use the product as input to a method of adder module 
 	// store the result in another varible
 	rule rl_performMAC;
-		mul.put_x(regA);
-		mul.put_y(regB);
-		Bit#(32) product = zeroExtend(mul.get_z);
+		GetMulInp mulinp = GetMulInp{a:regA, b:regB};
+		mul.get_Inputs(mulinp);
+		//mul.put_x(regA);
+		//mul.put_y(regB);
+		Bit#(16) product = mul.get_z;
 		rca.start(product, regC);
 		macOut <= rca.get_result();
 	endrule: rl_performMAC
