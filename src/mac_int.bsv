@@ -8,7 +8,7 @@ typedef struct {
 	Bit#(8) a;
 	Bit#(8) b;
 	Bit#(32) c;
-	} MACinputs deriving(Bits,Eq);
+	} MACinputsint deriving(Bits,Eq);
 
 
 // interface declaration for 
@@ -46,7 +46,7 @@ module mkMAC_int(MAC_int_ifc);
 		Bit#(32) product = zeroExtend(mul.get_z);
 		rca.start(product, regC);
 		macOut <= rca.get_result();
-	endrule	
+	endrule: rl_performMAC
 
 
 	//---method declarations---//
@@ -56,12 +56,12 @@ module mkMAC_int(MAC_int_ifc);
 		regA <=  input.a;
 		regB <=  input.b;
 		regC <=  input.c;
-	end
+	endmethod: get_Inputs
 
 	//method to return output
 	method Bit#(32) get_MAC();
-		return result;
-	endmethod
+		return macOut;
+	endmethod: get_MAC
 
 endmodule: mkMAC_int
 
