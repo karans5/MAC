@@ -1,7 +1,7 @@
 //package definition
 package mac_int;		
-import adder::*;//import adder module
-import multiplier::*;// import multiplier module
+import adder_int::*;//import adder module
+import multiplier_int::*;// import multiplier module
 
 //input struct declaration
 typedef struct {
@@ -16,7 +16,7 @@ interface MAC_int_ifc;
 //	method Action get_A(Bit#(8) value);
 //	method Action get_B(Bit#(8) value);
 //	method Action get_C(Bit#(32) value);
-	method Action get_Inputs(MACinputs input);
+	method Action get_Inputs(MACinputsint inputs);
     method Bit#(32) get_MAC();	
 endinterface: MAC_int_ifc
 
@@ -32,32 +32,42 @@ module mkMAC_int(MAC_int_ifc);
 	Reg#(Bit#(8)) regB <- mkReg(0);
 	Reg#(Bit#(32)) regC <- mkReg(0);
 	Reg#(Bit#(32)) macOut <- mkReg(0);
-
+	Reg#(Bool) rg_sent_inputs <- mkReg(False);
+	Reg#(Bool) rg_add_complete <- mkReg(False);
+	
 	//---rule declarations---//
 
-	//rule to perform mac
-	//call multiplier module to perform multiply operation 
-	//store th product in temp variable
-	//the use the product as input to a method of adder module 
-	// store the result in another varible
-	rule rl_performMAC;
-		GetMulInp mulinp = GetMulInp{a:regA, b:regB};
-		mul.get_Inputs(mulinp);
-		//mul.put_x(regA);
-		//mul.put_y(regB);
-		Bit#(16) product = mul.get_z;
-		rca.start(product, regC);
-		macOut <= rca.get_result();
-	endrule: rl_performMAC
+	// Rule to start the MAC operation by initiating the adder
+	rule rl_startMAC;
+    		GetMulInp mulinp = GetMulInp{a: regA, b: regB};
+    		mul.get_Inputs(mulinp);
+			rg_sent_inputs <= True;
+	endrule: rl_startMAC
 
+	// Rule to get multiplication result and send it the adder module
+	rule rl_intermediateMAC(rg_sent_inputs);
+    		// Get the product from the multiplier and extend it to 32 bits
+    		Bit#(32) product = zeroExtend(mul.get_Mul);
+    		// Start the ripple carry adder with the product and regC
+    		rca.start(product, regC);
+			rg_sent_inputs <= False;
+			rg_add_complete <= True;
+	endrule: rl_intermediateMAC
+
+	// Rule to retrieve the result from the adder and store it in macOut
+	rule rl_getMAC (rg_add_complete);
+    		// Extract the sum from the Adderresult struct and assign it to macOut
+    		macOut <= rca.get_add().sum;
+			rg_add_complete <= False;
+	endrule: rl_getMAC
 
 	//---method declarations---//
 
 	//method to get inputs
-	method Action get_Inputs(MACinputs input);
-		regA <=  input.a;
-		regB <=  input.b;
-		regC <=  input.c;
+	method Action get_Inputs(MACinputsint inputs);
+		regA <=  inputs.a;
+		regB <=  inputs.b;
+		regC <=  inputs.c;
 	endmethod: get_Inputs
 
 	//method to return output
