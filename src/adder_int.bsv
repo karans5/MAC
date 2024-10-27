@@ -30,8 +30,8 @@ module mkRipplecarryadder (RCA_ifc);
     function Adderresult ripple_carry_addition(
         Bit#(32) a, Bit#(32) b, Bit#(1) cin);  // 'cin' is the carry-in bit
 
-        Bit#(32) sum;         // 32-bit sum for the addition
-        Bit#(33) carry;       // 33-bit carry to handle overflow
+        Bit#(32) sum = 0;         // 32-bit sum for the addition
+        Bit#(33) carry = 0;       // 33-bit carry to handle overflow
 
         carry[0] = cin;  // Initialize carry-in
 
