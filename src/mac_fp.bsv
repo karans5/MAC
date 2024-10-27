@@ -1,8 +1,86 @@
 package mac_fp;
-// Include registers and wires
-//replace + with adder module.
+
+import adder_fp::*;//import adder module
+import multiplier_fp::*;// import multiplier module
+
+//input struct declaration
+typedef struct {
+	Bit#(16) a;
+	Bit#(16) b;
+	Bit#(32) c;
+	} MACinputsfp deriving(Bits,Eq);
 
 
+// interface declaration for 
+interface MAC_fp_ifc;
+//	method Action get_A(Bit#(8) value);
+//	method Action get_B(Bit#(8) value);
+//	method Action get_C(Bit#(32) value);
+	method Action get_FpInputs(MACinputsfp inputs);
+    method Bit#(32) get_MACfp();	
+endinterface: MAC_fp_ifc
+
+(*synthesize*)
+module mkMAC_fp(MAC_fp_ifc);
+	//instantiating adder interface and binding to adder module
+	RCA_ifc rca <- mkRipplecarryadder;
+	//instantiating multiplier interface and binfing it to multiplier module
+	FP_multiplier_ifc mulfp <- mkFP_multiplier;
+
+	//Register declarations
+	Reg#(Bit#(16)) regA <- mkReg(0);
+	Reg#(Bit#(16)) regB <- mkReg(0);
+	Reg#(Bit#(32)) regC <- mkReg(0);
+	Reg#(Bit#(32)) macFpOut <- mkReg(0);
+	Reg#(Bool) rg_sent_inputs <- mkReg(False);
+	Reg#(Bool) rg_add_complete <- mkReg(False);
+	
+	//---rule declarations---//
+
+	// Rule to start the MAC operation by initiating the adder
+	rule rl_startMACfp;
+    		//GetMulInp mulinp = GetMulInp{a: regA, b: regB};
+    		//mul.get_Inputs(mulinp);
+			mulfp.start(regA,regB);
+			rg_sent_inputs <= True;
+	endrule: rl_startMACfp
+
+	// Rule to get multiplication result and send it the adder module
+	rule rl_intermediateMACfp(rg_sent_inputs);
+    		// Get the product from the multiplier and extend it to 32 bits
+    		Bit#(32) product = zeroExtend(mulfp.get_Product);
+    		// Start the ripple carry adder with the product and regC
+    		rca.start(product, regC);
+			rg_sent_inputs <= False;
+			rg_add_complete <= True;
+	endrule: rl_intermediateMACfp
+
+	// Rule to retrieve the result from the adder and store it in macOut
+	rule rl_getMACfp (rg_add_complete);
+    		// Extract the sum from the Adderresult struct and assign it to macOut
+    		macFpOut <= rca.get_add().sum;
+			rg_add_complete <= False;
+	endrule: rl_getMAC
+
+	//---method declarations---//
+
+	//method to get inputs
+	method Action get_FpInputs(MACinputsfp inputs);
+		regA <=  inputs.a;
+		regB <=  inputs.b;
+		regC <=  inputs.c;
+	endmethod: get_Inputs
+
+	//method to return output
+	method Bit#(32) get_MACfp();
+		return macFpOut;
+	endmethod: get_MACfp
+
+endmodule: mkMAC_fp
+
+
+
+/*
 module mkMultiplyAccumulate (Empty);
 
    // Function to convert bfloat16 to FP32
@@ -106,5 +184,11 @@ module mkMultiplyAccumulate (Empty);
 
 
 endmodule
+*/
+
+
+
+
+
 
 endpackage: mac_fp
