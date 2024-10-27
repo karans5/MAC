@@ -1,14 +1,11 @@
+package multiplier_fp;
 import DReg :: *;
 
 //multiplier interface
 interface FP_multiplier_ifc;
-
 	method Action start(Bit#(16) a, Bit#(16) b);
 	method Bit#(32) get_Product();
-
 endinterface: FP_multiplier_ifc
-
-
 
 
 (*synthesize*)
@@ -131,4 +128,4 @@ Reg#(Bool) rg_Product_valid    <- mkDReg(False);
  
 endmodule : mkFP_multiplier
 
-
+endpackage: multiplier_fp
