@@ -1,4 +1,4 @@
-package multiplier;
+package multiplier_int;
 
 typedef struct {
     Bit#(8) a;
@@ -9,7 +9,7 @@ interface Mult_ifc;
     method Action get_Inputs(GetMulInp inputs);
     method Bit#(16) get_Mul();
 endinterface: Mult_ifc
-
+(*synthesize*)
 module mkMult (Mult_ifc);
 
     Reg#(Bit#(16)) product <- mkReg(0);  // Store the product
@@ -44,5 +44,5 @@ module mkMult (Mult_ifc);
 
 endmodule: mkMult
 
-endpackage: multiplier
+endpackage: multiplier_int
 
