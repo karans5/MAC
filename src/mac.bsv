@@ -30,7 +30,7 @@ module mkMac (MAC_ifc);
 		let tempA = regA[7:0];
 		let tempB = regB[7:0];
 		// Instantiate the MACinputs struct with the temporary variables and regC
-		MACinputsint inputsint = MACinputsint{a:tempA,b:tempB,c:regC};
+		MACinputsint inputsint = MACinputsint{a:unpack(tempA),b:unpack(tempB),c:unpack(regC)};
 		// Call the get_Inputs method on the MAC interface
 		macint.get_IntInputs(inputsint);
 	endrule
@@ -44,7 +44,7 @@ module mkMac (MAC_ifc);
 
 	// method to get value A
 	method Action get_A(Bit#(16) value);
-		regA <= value;
+			regA <= value;
 	endmethod: get_A
 
 	// method to get value B
@@ -65,7 +65,7 @@ module mkMac (MAC_ifc);
 	// method to return 32 bit output
 	method Bit#(32) get_MAC();
 		if (select == 0)
-			return macint.get_MACint;
+			return pack(macint.get_MACint);
 		else
 			return macfp.get_MACfp;
 
