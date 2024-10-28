@@ -53,7 +53,7 @@ module mkMac (MAC_ifc);
 	endmethod: get_B
 
 	// method to get value C
-	method Action get_C(Bit#(16) value);
+	method Action get_C(Bit#(32) value);
 		regC <= value;
 	endmethod: get_C
 
@@ -65,9 +65,9 @@ module mkMac (MAC_ifc);
 	// method to return 32 bit output
 	method Bit#(32) get_MAC();
 		if (select == 0)
-			return mac_int.macIntOut;
+			return macint.get_MACint;
 		else
-			return mac_fp.macFpOut;
+			return macfp.get_MACfp;
 
 	endmethod: get_MAC
 
