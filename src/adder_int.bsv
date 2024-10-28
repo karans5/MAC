@@ -5,12 +5,12 @@ import DReg :: *;  // Importing `DReg` module to use delayed registers (DRegs)
 // Struct to hold the result of the addition, including the sum and overflow flag
 typedef struct {
     Bit#(1) overflow;  // Overflow flag (1 if overflow occurs)
-    Bit#(32) sum;      // 32-bit sum of the two inputs
-} Adderresult deriving(Bits, Eq);
+    Int#(32) sum;      // 32-bit signed sum of the two inputs
+} Adderresult deriving (Bits, Eq);
 
 // Ripple Carry Adder interface definition
 interface RCA_ifc;
-    method Action start(Bit#(32) a, Bit#(32) b);  // Method to load inputs
+    method Action start(Int#(32) a, Int#(32) b);  // Method to load signed inputs
     method Adderresult get_add();  // Method to get the result (sum + overflow)
 endinterface: RCA_ifc
 
@@ -19,18 +19,17 @@ endinterface: RCA_ifc
 module mkRipplecarryadder (RCA_ifc);
 
     // --- Register Declarations --- //
-
-    Reg#(Bit#(32)) rg_inp1 <- mkReg(0);  // Register to store input 'a'
-    Reg#(Bit#(32)) rg_inp2 <- mkReg(0);  // Register to store input 'b'
+    Reg#(Int#(32)) rg_inp1 <- mkReg(0);  // Register to store input 'a'
+    Reg#(Int#(32)) rg_inp2 <- mkReg(0);  // Register to store input 'b'
     Reg#(Bool) rg_inp_valid <- mkDReg(False);  // Flag to indicate valid input
     Reg#(Adderresult) rg_out <- mkReg(Adderresult{overflow: 0, sum: 0});  // Register for the result
     Reg#(Bool) rg_out_valid <- mkDReg(False);  // Flag to indicate valid output
 
     // Function to perform the ripple carry addition
     function Adderresult ripple_carry_addition(
-        Bit#(32) a, Bit#(32) b, Bit#(1) cin);  // 'cin' is the carry-in bit
+        Int#(32) a, Int#(32) b, Bit#(1) cin);  // 'cin' is the carry-in bit
 
-        Bit#(32) sum = 0;         // 32-bit sum for the addition
+        Int#(32) sum = 0;         // 32-bit signed sum for the addition
         Bit#(33) carry = 0;       // 33-bit carry to handle overflow
 
         carry[0] = cin;  // Initialize carry-in
@@ -60,7 +59,7 @@ module mkRipplecarryadder (RCA_ifc);
     // --- Method Definitions --- //
 
     // Method to set the input values for addition
-    method Action start(Bit#(32) a, Bit#(32) b);
+    method Action start(Int#(32) a, Int#(32) b);
         rg_inp1 <= a;  // Store input 'a' in register
         rg_inp2 <= b;  // Store input 'b' in register
     endmethod: start
