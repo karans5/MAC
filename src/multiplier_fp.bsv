@@ -52,8 +52,8 @@ Reg#(Bool) rg_Product_valid    <- mkDReg(False);
       Bit#(8) exp_a  = inp_a[14:7]; //+ 8'b10000001;
       Bit#(8) exp_b  = inp_b[14:7];//+ 8'b10000001;
       
-      Bit#(24) frac_a = {1'b1, inp_a[6:0]};  // Implicit leading 1
-      Bit#(24) frac_b = {1'b1, inp_b[6:0]};  // Implicit leading 1
+      Bit#(8) frac_a = {1'b1, inp_a[6:0]};  // Implicit leading 1
+      Bit#(8) frac_b = {1'b1, inp_b[6:0]};  // Implicit leading 1
       
       Bit#(16) frac1 = zeroExtend(frac_a);
       Bit#(16) frac2 = zeroExtend(frac_b);
@@ -85,31 +85,52 @@ Reg#(Bool) rg_Product_valid    <- mkDReg(False);
       end
       
       //round to nearest
-      // do rounding before final result
-      
+      // do rounding before final result      
       //include the logic for rounding
       
-      // Assemble final result back into IEEE 754 FP32 format
+      Bit#(1) g = frac_result[9]; //guard bit
+      Bit#(1) r = frac_result[8]; //round bit
+      Bit#(1) s = |(frac_result[7:0]); //or of all sticky bits
       
-      Bit#(32) result = {sign, exp_result, frac_result[30:25]};
+      Bit#(8) final_frac = 8'b0;
+      
+      if(r == 1'b0)  begin
+      	final_frac = {1'b0,frac_result[15:9]};
+      	final_frac = final_frac << 1;
+      end	
+      else if( r == 1'b1 && s == 1'b1) begin
+      	final_frac = {1'b0,frac_result[15:9]} + 1;
+      	if (final_frac[7] == 1) begin
+      		exp_result = exp_result + 1;
+      		final_frac = final_frac >>1;
+        end
+      end else if ( g == 1'b0 && r == 1'b1 && s == 1'b0) begin 
+            final_frac = {1'b0,frac_result[15:9]};
+            final_frac = final_frac << 1;
+      end else if ( g == 1'b1 && r == 1'b1 && s== 1'b0) begin 
+           final_frac = {1'b0,frac_result[15:9]} + 1;
+      	if (final_frac[7] == 1) begin
+      		exp_result = exp_result + 1;
+      		final_frac = final_frac >>1;
+        end
+       end
+      // Assemble final result back into IEEE 754 FP32 format
+      Bit#(23) mantissa_result = {final_frac[7:1],16'b0}; 
+      Bit#(32) result = {sign, exp_result, mantissa_result};
       return result;
    endfunction
 	
    //always block to compute the product
    rule rl_compute_product (rg_inp_valid);
      
-   	//Bit#(32) fp_A = bf16_to_fp32(rg_A);
-   	//Bit#(32) fp_B = bf16_to_fp32(rg_B);
-   	$display("A = %b",fp_A);
-   	$display("B = %b",fp_B);
+   	$display("A = %b",rg_A);
+   	$display("B = %b",rg_B);
    	
-   	rg_Product <= fp_multiply(fp_A,fp_B);
+   	rg_Product <= fp_multiply(rg_A,rg_B);
    	rg_Product_valid <= True;
    	rg_inp_valid <= False;
    	$display("Pro = %b",rg_Product);
-   	//$display("exp = %d",rg_Product[30:23] + 8'b10000001);
-   	//Bit#(32) prod = fp_multiply(fp_A,fp_B);
-   	//rg_Product <=prod;
+   	
    	
    endrule: rl_compute_product
 
