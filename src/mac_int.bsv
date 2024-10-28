@@ -1,7 +1,7 @@
 // Package definition
 package mac_int;		
-import adder_int::*;      // Import adder module (must handle signed addition)
-import multiplier_int::*; // Import multiplier module (must handle signed multiplication)
+import adder_int::*;      // Import adder module
+import multiplier_int::*; // Import multiplier module 
 
 // Input struct declaration
 typedef struct {
