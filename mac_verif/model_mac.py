@@ -1,7 +1,7 @@
 # importing mac_coverage
-from coverpoints_mac import mac_coverage
+#from coverpoints_mac import mac_coverage
 
-@mac_coverage
+#@mac_coverage
 def model_mac(a, b, c, select: int):
 
     # Determine input type for coverage
@@ -21,3 +21,5 @@ def model_mac(a, b, c, select: int):
 
     print(f"[MAC Model] a={a}, b={b}, c={c}, select={select}, result={result}, type={input_type}")
     return result
+
+karan = model_mac(1,-2,4.5,1)
