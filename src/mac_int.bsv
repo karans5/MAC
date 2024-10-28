@@ -1,81 +1,75 @@
-//package definition
+// Package definition
 package mac_int;		
-import adder_int::*;//import adder module
-import multiplier_int::*;// import multiplier module
+import adder_int::*;      // Import adder module (must handle signed addition)
+import multiplier_int::*; // Import multiplier module (must handle signed multiplication)
 
-//input struct declaration
+// Input struct declaration
 typedef struct {
-	Bit#(8) a;
-	Bit#(8) b;
-	Bit#(32) c;
-	} MACinputsint deriving(Bits,Eq);
+	Int#(8) a;   // Use Int#(8) for signed 8-bit input
+	Int#(8) b;   // Use Int#(8) for signed 8-bit input
+	Int#(32) c;  // Use Int#(32) for signed 32-bit input
+} MACinputsint deriving (Bits, Eq);
 
-
-// interface declaration for 
+// Interface declaration for the MAC module
 interface MAC_int_ifc;
-//	method Action get_A(Bit#(8) value);
-//	method Action get_B(Bit#(8) value);
-//	method Action get_C(Bit#(32) value);
 	method Action get_IntInputs(MACinputsint inputs);
-    method Bit#(32) get_MACint();	
+    method Int#(32) get_MACint(); // Output method returns signed 32-bit result
 endinterface: MAC_int_ifc
 
 (*synthesize*)
 module mkMAC_int(MAC_int_ifc);
-	//instantiating adder interface and binding to adder module
-	RCA_ifc rca <- mkRipplecarryadder;
-	//instantiating multiplier interface and binfing it to multiplier module
-	Mult_ifc mul <- mkMult;
+	// Instantiate the adder and multiplier interfaces
+	RCA_ifc rca <- mkRipplecarryadder;  // Ensure adder supports signed arithmetic
+	Mult_ifc mul <- mkMult;             // Ensure multiplier supports signed multiplication
 
-	//Register declarations
-	Reg#(Bit#(8)) regA <- mkReg(0);
-	Reg#(Bit#(8)) regB <- mkReg(0);
-	Reg#(Bit#(32)) regC <- mkReg(0);
-	Reg#(Bit#(32)) macOut <- mkReg(0);
+	// Register declarations
+	Reg#(Int#(8)) regA <- mkReg(0);
+	Reg#(Int#(8)) regB <- mkReg(0);
+	Reg#(Int#(32)) regC <- mkReg(0);
+	Reg#(Int#(32)) macOut <- mkReg(0);
 	Reg#(Bool) rg_sent_inputs <- mkReg(False);
 	Reg#(Bool) rg_add_complete <- mkReg(False);
 	
-	//---rule declarations---//
+	// --- Rule Declarations --- //
 
-	// Rule to start the MAC operation by initiating the adder
+	// Rule to start the MAC operation by initiating the multiplier
 	rule rl_startMAC;
-    		GetMulInp mulinp = GetMulInp{a: regA, b: regB};
-    		mul.get_Inputs(mulinp);
-			rg_sent_inputs <= True;
+		GetMulInp mulinp = GetMulInp{a: regA, b: regB};
+		mul.get_Inputs(mulinp);
+		rg_sent_inputs <= True;
 	endrule: rl_startMAC
 
-	// Rule to get multiplication result and send it the adder module
+	// Rule to get multiplication result and send it to the adder module
 	rule rl_intermediateMAC(rg_sent_inputs);
-    		// Get the product from the multiplier and extend it to 32 bits
-    		Bit#(32) product = zeroExtend(mul.get_Mul);
-    		// Start the ripple carry adder with the product and regC
-    		rca.start(product, regC);
-			rg_sent_inputs <= False;
-			rg_add_complete <= True;
+		// Get the product from the multiplier and sign-extend it to 32 bits
+		Int#(32) product = signExtend(mul.get_Mul);
+		// Start the ripple carry adder with the product and regC
+		rca.start(product, regC);
+		rg_sent_inputs <= False;
+		rg_add_complete <= True;
 	endrule: rl_intermediateMAC
 
 	// Rule to retrieve the result from the adder and store it in macOut
 	rule rl_getMAC (rg_add_complete);
-    		// Extract the sum from the Adderresult struct and assign it to macOut
-    		macOut <= rca.get_add().sum;
-			rg_add_complete <= False;
+		// Extract the sum from the Adderresult struct and assign it to macOut
+		macOut <= rca.get_add().sum;
+		rg_add_complete <= False;
 	endrule: rl_getMAC
 
-	//---method declarations---//
+	// --- Method Declarations --- //
 
-	//method to get inputs
+	// Method to get inputs
 	method Action get_IntInputs(MACinputsint inputs);
-		regA <=  inputs.a;
-		regB <=  inputs.b;
-		regC <=  inputs.c;
+		regA <= inputs.a;
+		regB <= inputs.b;
+		regC <= inputs.c;
 	endmethod: get_IntInputs
 
-	//method to return output
-	method Bit#(32) get_MACint();
+	// Method to return output
+	method Int#(32) get_MACint();
 		return macOut;
 	endmethod: get_MACint
 
 endmodule: mkMAC_int
-
 
 endpackage: mac_int
