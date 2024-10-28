@@ -29,8 +29,8 @@ module mk_Adder_fp (FP_add_ifc);
        Bit#(8) exp_A   = a[30:23];
        Bit#(8) exp_B   = b[30:23];
        
-       Bit#(23) mantissa_A = a[22:0];
-       Bit#(23) mantissa_B = b[22:0];
+       Bit#(24) mantissa_A = {1'b1,a[22:0]};  //adding implicit one for mantissa addition
+       Bit#(24) mantissa_B = {1'b1,b[22:0]};
               
        Bit#(32) result = 32'b0;     
        //step2: align the exponents:     
@@ -38,33 +38,34 @@ module mk_Adder_fp (FP_add_ifc);
          
         Bit#(8) exp_Diff = (exp_A > exp_B) ? (exp_A - exp_B) : (exp_B - exp_A);
        
-        Bit#(25) shiftedMantissaA = {1'b0,1'b1,mantissa_A}; //adding implicit one for mantissa addition
-        Bit#(25) shiftedMantissaB = {1'b0,1'b1,mantissa_B};
+        Bit#(24) shiftedMantissaA = mantissa_A;
+        Bit#(24) shiftedMantissaB = mantissa_B;
 
         if (exp_A > exp_B) begin
             shiftedMantissaB = shiftedMantissaB >> exp_Diff;
+            
         end else if (exp_B > exp_A) begin
-            shiftedMantissaA = shiftedMantissaA >> exp_Diff;
+            shiftedMantissaA = shiftedMantissaA >> exp_Diff;            
         end
 
         Bit#(8) result_Exp = (exp_A> exp_B) ? exp_A : exp_B;
 
         // Step 3: Add or subtract mantissas based on sign
         
-        Bit#(25) mantissaSum = 25'b0;
+        Bit#(25) mantissaSum = 25'b0; //to acccount for overflow;
         Bit#(1) result_Sign;
 
         if (sign_A == sign_B) begin
             // Same sign, add mantissas
-            mantissaSum = shiftedMantissaA + shiftedMantissaB;
+            mantissaSum = {1'b0,shiftedMantissaA}+ {1'b0,shiftedMantissaB}; //making operands 25-bit
             result_Sign = sign_A;
         end else begin
             // Different signs, subtract mantissas
             if (shiftedMantissaA > shiftedMantissaB) begin
-              mantissaSum =  shiftedMantissaA - shiftedMantissaB;
+              mantissaSum =  {1'b0,shiftedMantissaA} - {1'b0,shiftedMantissaB}; //making the operands 25-bit
                result_Sign = sign_A;
             end else begin
-                mantissaSum = shiftedMantissaB - shiftedMantissaA;
+                mantissaSum = {1'b0,shiftedMantissaB} - {1'b0,shiftedMantissaA};
                 result_Sign = sign_B;
             end
         end
@@ -76,28 +77,37 @@ module mk_Adder_fp (FP_add_ifc);
             result_Exp = result_Exp + 1;
         end else begin
             // Normalize left if possible
-            if (mantissaSum[23] == 1'b0 && result_Exp >0) begin
+            for (Integer i = 0; i <23; i = i+1) begin
+             if(mantissaSum[23] == 1'b0 && result_Exp >0) begin
                 mantissaSum = mantissaSum << 1;
                 result_Exp = result_Exp- 1;
             end
+            end
         end
+        
+          // Step:6 round result
+       Bit#(1) g = mantissaSum[2];
+       Bit#(1) r = mantissaSum[1];
+       Bit#(1) s = mantissaSum[0];
+       
+        
 
         // Step 5: Check for overflow or underflow:
         if (result_Exp > 8'b11111110) begin
         	result = {result_Sign, 8'hFF, 23'b0}; // Set to Infinity
         end else if (result_Exp < 8'b00000001) begin
         	if(result_Exp == 0) begin 
-        		result = {result_Sign, 31'b0};
+        		result = {result_Sign, 31'b0}; //set to zero
         	end else begin 
-        		result = {result_Sign, 8'b0, mantissaSum[22:0]};
+        		result = {result_Sign, 8'b0, {mantissaSum[22:2],2'b0}};
         	end
         end else begin
         	
-        	result = {result_Sign, result_Exp, mantissaSum[22:0]}; // Normal result
+        	result = {result_Sign, result_Exp, {mantissaSum[22:2],2'b0}}; // Normal result
        
         
         end
-       
+     
         return result;
            
         
@@ -117,10 +127,11 @@ module mk_Adder_fp (FP_add_ifc);
     // --- Method Definitions --- //
 
     // Method to set the input values for addition
-   method Action start(Bit#(32) a, Bit#(32) b);
+   method Action start(Bit#(32) a, Bit#(32) b)if(!rg_fp_inp_valid);
     rg_fp_inp1 <= a;  // Store input 'a' in register
     rg_fp_inp2 <= b;  // Store input 'b' in register
     rg_fp_inp_valid <= True;  // Set input valid flag to true
+    rg_fp_out_valid <=False;
    endmethod: start
 
 
