@@ -5,7 +5,7 @@ import cocotb
 from cocotb.clock import Clock
 from cocotb.triggers import RisingEdge
 import struct
-#from model_mac import *
+from model_mac import refmodel
 #print("reading mac32 values")
 # Helper function to read inputs from a file
 def read_macint32_file(file_path):
@@ -109,7 +109,7 @@ async def test_mac(dut):
         dut.EN_get_C.value = 0  # Disable after setting
 
         # Simulate expected output using mac_model
-        #expected_output = mac_model(a, b, c, 0)
+        expected_output = refmodel(a, b, c, 0)
 
         # Wait for the MAC output to be ready
         await RisingEdge(dut.CLK)
@@ -158,7 +158,7 @@ async def test_mac(dut):
         dut.EN_get_C.value = 0  # Disable after setting
 
         # Simulate expected output using mac_model
-        #expected_output = mac_model(a, b, c, 1)
+        expected_output = refmodel(a, b, c, 1)
 
         # Wait for the MAC output to be ready
         await RisingEdge(dut.CLK)
