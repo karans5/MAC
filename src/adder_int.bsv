@@ -27,9 +27,9 @@ module mkRipplecarryadder (RCA_ifc);
 
     // Function to perform the ripple carry addition
     function Adderresult ripple_carry_addition(
-        Int#(32) a, Int#(32) b, Bit#(1) cin);  // 'cin' is the carry-in bit
+        Bit#(32) a, Bit#(32) b, Bit#(1) cin);  // 'cin' is the carry-in bit
 
-        Int#(32) sum = 0;         // 32-bit signed sum for the addition
+        Bit#(32) sum = 0;         // 32-bit signed sum for the addition
         Bit#(33) carry = 0;       // 33-bit carry to handle overflow
 
         carry[0] = cin;  // Initialize carry-in
@@ -42,7 +42,7 @@ module mkRipplecarryadder (RCA_ifc);
 
         // Create the result struct and assign sum and overflow
         Adderresult out;
-        out.sum = sum;
+        out.sum = unpack(sum);
         out.overflow = carry[32];  // Set overflow flag from the final carry-out
 
         return out;  // Return the computed result
@@ -52,7 +52,7 @@ module mkRipplecarryadder (RCA_ifc);
 
     rule rl_rca;
         // Compute the addition using the ripple_carry_addition function
-        rg_out <= ripple_carry_addition(rg_inp1, rg_inp2, 1'b0);  
+        rg_out <= ripple_carry_addition(pack(rg_inp1), pack(rg_inp2), 1'b0); 
         rg_out_valid <= True;  // Set output valid flag to true
     endrule: rl_rca
 
