@@ -107,4 +107,4 @@ async def test_mac(dut):
             f'Mismatch: DUT = {float(dut.output.value)}, Expected = {expected_output}'
         dut._log.info(f'Floating-Point MAC Output: {float(dut.output.value)}')
 
-
+    coverage_db.export_to_yaml(filename="coverage_mac.yml")
