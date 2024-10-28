@@ -16,8 +16,8 @@ interface MAC_int_ifc;
 //	method Action get_A(Bit#(8) value);
 //	method Action get_B(Bit#(8) value);
 //	method Action get_C(Bit#(32) value);
-	method Action get_Inputs(MACinputsint inputs);
-    method Bit#(32) get_MAC();	
+	method Action get_IntInputs(MACinputsint inputs);
+    method Bit#(32) get_MACint();	
 endinterface: MAC_int_ifc
 
 (*synthesize*)
@@ -64,16 +64,16 @@ module mkMAC_int(MAC_int_ifc);
 	//---method declarations---//
 
 	//method to get inputs
-	method Action get_Inputs(MACinputsint inputs);
+	method Action get_IntInputs(MACinputsint inputs);
 		regA <=  inputs.a;
 		regB <=  inputs.b;
 		regC <=  inputs.c;
-	endmethod: get_Inputs
+	endmethod: get_IntInputs
 
 	//method to return output
-	method Bit#(32) get_MAC();
+	method Bit#(32) get_MACint();
 		return macOut;
-	endmethod: get_MAC
+	endmethod: get_MACint
 
 endmodule: mkMAC_int
 
