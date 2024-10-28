@@ -23,7 +23,7 @@ endinterface: MAC_fp_ifc
 (*synthesize*)
 module mkMAC_fp(MAC_fp_ifc);
 	//instantiating adder interface and binding to adder module
-	RCA_ifc rca <- mkRipplecarryadder;
+	FP_add_ifc addfp <- mk_Adder_fp;
 	//instantiating multiplier interface and binfing it to multiplier module
 	FP_multiplier_ifc mulfp <- mkFP_multiplier;
 
@@ -50,7 +50,7 @@ module mkMAC_fp(MAC_fp_ifc);
     		// Get the product from the multiplier and extend it to 32 bits
     		Bit#(32) product = zeroExtend(mulfp.get_Product);
     		// Start the ripple carry adder with the product and regC
-    		rca.start(product, regC);
+    		addfp.start(product, regC);
 			rg_sent_inputs <= False;
 			rg_add_complete <= True;
 	endrule: rl_intermediateMACfp
@@ -58,9 +58,9 @@ module mkMAC_fp(MAC_fp_ifc);
 	// Rule to retrieve the result from the adder and store it in macOut
 	rule rl_getMACfp (rg_add_complete);
     		// Extract the sum from the Adderresult struct and assign it to macOut
-    		macFpOut <= rca.get_add().sum;
+    		macFpOut <= addfp.get_add();
 			rg_add_complete <= False;
-	endrule: rl_getMAC
+	endrule: rl_getMACfp
 
 	//---method declarations---//
 
@@ -69,7 +69,7 @@ module mkMAC_fp(MAC_fp_ifc);
 		regA <=  inputs.a;
 		regB <=  inputs.b;
 		regC <=  inputs.c;
-	endmethod: get_Inputs
+	endmethod: get_FpInputs
 
 	//method to return output
 	method Bit#(32) get_MACfp();
