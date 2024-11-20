@@ -1,7 +1,8 @@
-# importing mac_coverage
-#from coverpoints_mac import mac_coverage
+#importing mac_coverage
+import cocotb
+from coverpoints_mac import mac_coverage
 
-#@mac_coverage
+@mac_coverage
 def refmodel(a, b, c, select: int):
 
     # Determine input type for coverage
