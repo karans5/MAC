@@ -70,7 +70,5 @@ help:
 	@echo "  all              - Generate Verilog, simulate, and run verification"
 	@echo "  generate_verilog - Generate Verilog files from BSV sources"
 	@echo "  simulate         - Run simulation using Verilator"
-	@echo "  verify          - Run verification tests"
-	@echo "  lint            - Check BSV syntax"
 	@echo "  clean_build     - Clean all generated files"
 	@echo "  help            - Show this help message"
