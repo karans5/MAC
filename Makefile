@@ -23,16 +23,3 @@ clean_build:
 	@rm -rf results.xml cov*.yml
 	@rm -rf *.vcd results.xml sim_build
 	@echo "Cleaned"
-<<<<<<< HEAD
-
-# Display help message with available make commands
-.PHONY: help
-help:
-	@echo "Available make commands:"
-	@echo "  all              - Generate Verilog, simulate, and run verification"
-	@echo "  generate_verilog - Generate Verilog files from BSV sources"
-	@echo "  simulate         - Run simulation using Verilator"
-	@echo "  clean_build     - Clean all generated files"
-	@echo "  help            - Show this help message"
-=======
->>>>>>> parent of 1c59afa (added comments and additional target)
