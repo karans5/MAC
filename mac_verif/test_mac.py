@@ -2,10 +2,13 @@ import os
 import random
 from pathlib import Path
 import cocotb
+from cocotb_coverage.coverage import coverage_db
 from cocotb.clock import Clock
 from cocotb.triggers import RisingEdge
 import struct
-from model_mac import refmodel
+
+#import coverage
+from model_mac import *
 #print("reading mac32 values")
 # Helper function to read inputs from a file
 def read_macint32_file(file_path):
@@ -164,7 +167,8 @@ async def test_mac(dut):
         await RisingEdge(dut.CLK)
         assert dut.RDY_get_MAC.value == 1, "RDY_get_MAC not asserted"
 
-
+    # Export coverage data
+    coverage_db.export_to_yaml(filename="coverage_mac.yml")
     
 
 
