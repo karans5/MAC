@@ -1,5 +1,5 @@
-TOPFILE=mac.bsv
-BSVINCDIR=.:%/Libraries
+TOPFILE=src/mac.bsv
+BSVINCDIR=.:./src:%/Libraries
 BSCDEFINES=RV64
 VERILOGDIR=verilog/
 BUILDDIR=intermediate/

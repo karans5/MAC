@@ -5,11 +5,11 @@ PWD=$(shell pwd)
 
 export PYTHONPATH:=$(PWD)/mac_verif:$(PYTHONPATH)
 
-VERILOG_SOURCES=$(PWD)/verilog/mkMAC.v
+VERILOG_SOURCES=$(PWD)/verilog/*.v
 
 EXTRA_ARGS = --trace --trace-structs
 
-TOPLEVEL = mkMAC
+TOPLEVEL = mkMac
 MODULE   := test_mac
 
 include $(shell cocotb-config --makefiles)/Makefile.sim
