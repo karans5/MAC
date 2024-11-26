@@ -89,13 +89,3 @@ The MAC unit implements the operation: `accumulator += multiplicand × multiplie
 ## License
 
 This project is part of the CS6230 course work.
-
-## Assignment 1:
-
-1. int32 :
-- a. pipelined design: code - not-completed, verification - not-completed
-- b. unpipeined design : code - completed, verification -completed
-
-2. bfloat16:
-- a. pipelined design: code - not-completed, verification - not-completed
-- b. unpipeined design : code - completed, verification - completed
