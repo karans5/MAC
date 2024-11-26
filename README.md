@@ -58,6 +58,26 @@ make clean_build
 - `make simulate`: Runs simulation using Verilator
 - `make clean_build`: Removes all generated files and build artifacts
 
+## Project Status
+
+### 1. int32
+#### 1.1 Pipelined Design
+- Code: Not Completed
+- Verification: Not Completed
+
+#### 1.2 Unpipelined Design
+- Code: Completed
+- Verification: Completed
+
+### 2. bfloat16
+#### 2.1 Pipelined Design
+- Code: Not Completed
+- Verification: Not Completed
+
+#### 2.2 Unpipelined Design
+- Code: Completed
+- Verification: Completed
+
 ## Implementation Details
 
 The MAC unit implements the operation: `accumulator += multiplicand × multiplier`
